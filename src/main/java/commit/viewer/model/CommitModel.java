@@ -2,6 +2,8 @@ package commit.viewer.model;
 
 import com.google.common.base.MoreObjects;
 
+import java.util.Objects;
+
 /**
  * Commit Data Model. The model uses builder pattern.
  *
@@ -75,5 +77,25 @@ public class CommitModel {
                 .add("date", date)
                 .add("author", author)
                 .toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.sha, this.author, this.date, this.message);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        final CommitModel other = (CommitModel) obj;
+        return Objects.equals(this.sha, other.sha)
+                && Objects.equals(this.author, other.author)
+                && Objects.equals(this.date, other.date)
+                && Objects.equals(this.message, other.message);
     }
 }
