@@ -170,6 +170,7 @@ public enum GitCommitAccess {
             return emptyList();
         }
 
+        // TODO this is used when executing git fetch, we should add git fetch commands to update cache.
         updateCache();
 
         final int untilCommit = page * size;
@@ -179,6 +180,22 @@ public enum GitCommitAccess {
         return this.cache.get(this.branch).subList(untilCommit - size, untilCommit);
     }
 
+    /**
+     * Fetches the newest commits.
+     * The strategy used here is the following:
+     * <ol>
+     *     <li>Retrieve the first/newest 30 commits in a list.</li>
+     *     <li>Iterate the list of commit and see if there is any commit that equals to the first commit on the cache.</li>
+     *     <li>Count number of commit that cache doesn't contain and add it at the beginning of the cache list</li>
+     * </ol>
+     * Note, if none of 30 commits already exists in cache, we are assuming the cache is way too old, so we just delete
+     * the cache for the current branch and start over.
+     *
+     * @throws IOException          If http request fails sending data.
+     * @throws InterruptedException If http request is interrupted.
+     * @throws URISyntaxException   If URL is invalid.
+     * @throws ParseException       If message body is not a {@link JSONArray}.
+     */
     private void updateCache() throws URISyntaxException, ParseException, InterruptedException, IOException {
         if (this.cache.get(this.branch).size() == 0) {
             logger.debug("There is no cache to update");
@@ -240,9 +257,14 @@ public enum GitCommitAccess {
         final int pageAway = (int) Math.ceil((float) untilCommit / 30) - (int) Math.ceil((float) commitsFetched / 30);
 
         // n elements that already exists on the cache, e.g., there are 37 on cache, so 7 elements of page 2 should be skipped.
-        int nElements = commitsFetched % 30;
+        int nElementsToSkip = commitsFetched % 30;
 
-        for (int page = currentPage == 0 ? 1 : currentPage; page <= currentPage + pageAway; page++) {
+        int page = currentPage == 0 ? 1 : currentPage;
+        // if the current page is already full, i.e., 30, 60, 90, ..., we can just skip the current page
+        if (currentPage != 0 && commitsFetched % 30 == 0) {
+            page++;
+        }
+        for (; page <= currentPage + pageAway; page++) {
             final URL url = new URL(
                     format(
                             "%s/commits?sha=%s&page=%d",
@@ -258,8 +280,8 @@ public enum GitCommitAccess {
             }
 
             for (final CommitModel commit: commits) {
-                if (nElements != 0) {
-                    nElements--;
+                if (nElementsToSkip != 0) {
+                    nElementsToSkip--;
                     continue;
                 }
                 this.cache.get(this.branch).add(commit);
