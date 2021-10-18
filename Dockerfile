@@ -5,7 +5,7 @@ FROM maven:${MAVEN_VERSION}-adoptopenjdk-${JAVA_VERSION} as BUILD
 
 COPY . /opt/server
 WORKDIR /opt/server
-RUN mvn install -T 4
+RUN mvn install -T 4 -DskipTests
 
 #FROM openjdk:${VERSION}-jre
 FROM openjdk:${JAVA_VERSION}-jre-slim-stretch

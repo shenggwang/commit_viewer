@@ -20,6 +20,7 @@
         <maven.surefire.version>2.12.3</maven.surefire.version>
 
         <jersey.version>2.30</jersey.version>
+        <http.client.version>4.5.6</http.client.version>
         <slf4j.version>1.7.30</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <guava.version>29.0-jre</guava.version>
@@ -50,6 +51,13 @@
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
             <version>${jersey.version}</version>
+        </dependency>
+
+        <!-- HTTP client -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${http.client.version}</version>
         </dependency>
 
         <!-- logger -->
@@ -104,11 +112,6 @@
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.6</version>
         </dependency>
 
     </dependencies>
